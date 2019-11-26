@@ -20,28 +20,8 @@ module.exports = app => {
   });
 
   app.get("/api/blogs", requireLogin, async (req, res) => {
-    try {
-      // Redis service
-
-      //Do we have any cached data in redis related to this query
-      client.get = util.promisify(client.get);
-
-      const cachedBlogs = await client.get(req.user.id);
-
-      //if yes, then respond to the request right away and return
-
-      if (cachedBlogs) {
-        console.log("Serving from redis cache");
-        return res.send(cachedBlogs);
-      }
-      //if no, we need to respond to the request and update our cache to store the data
-      const blogs = await Blog.find({ _user: req.user.id });
-      console.log("Serving from mongo");
-      res.send(blogs);
-      client.set(req.user.id, JSON.stringify(blogs));
-    } catch (error) {
-      console.log(error);
-    }
+    const blogs = await Blog.find({ _user: req.user.id });
+    res.send(blogs);
   });
 
   app.post("/api/blogs", requireLogin, async (req, res) => {
